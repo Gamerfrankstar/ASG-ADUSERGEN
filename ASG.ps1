@@ -80,15 +80,34 @@ try {
     $OUMVAR = Read-Host "Vil Oprette OU? [y/n]"
 
     if ($OUMVAR -eq "y") {
-        New-ADOrganizationalUnit -Name "$OUVar" -Path "DC=$Domain,DC=$TLDvar" -ProtectedFromAccidentalDeletion $False
-    } 
+        New-ADOrganizationalUnit -Name "$OUVAR" `
+        -Path "DC=$Domain,DC=$TLDvar" `
+        -ProtectedFromAccidentalDeletion $False `
+        } 
     elseif ($OUMVAR -eq "n") {
         Write-Host "Det vil måske ikke virke at oprette bruger."
     }
     
 }
 
+$OU2VAR = Read-Host "Vil du oprette en mere OU inden i? [y/n]"
+
+if($OU2VAR -eq "y") {
+    $OUnavn2 = Read-Host "Hvad skal den hede?"
+    
+    $path = "OU=$OUVAR,DC=$Domain,DC=$TLDvar"
+    New-ADOrganizationalUnit -Name "$OUnavn2" `
+     -Path "$path" `
+     -ProtectedFromAccidentalDeletion $False `
+
+    $PATH2 = "OU=$OUnavn2,OU=$OUVAR,DC=$Domain,DC=$TLDvar"
+}
+elseif($OU2VAR -eq "n") {
+    $PATH2 = "OU=$OUVAR,DC=$Domain,DC=$TLDvar"
+}
+
 $securitygroup = read-host "Hvilken security gruppe?"
+
 try {
     Get-ADGroup -Identity $securitygroup -ErrorAction Stop
 } catch {
@@ -96,7 +115,7 @@ try {
     $SCMVAR = Read-Host "Vil Oprette Security Group? [y/n]"
 
     if ($SCMVAR -eq "y") {
-        New-ADGroup -Name "$securitygroup" -Groupcategory "Security" -Groupscope "Global" -Path "OU=$OUVar,DC=$Domain,DC=$TLDvar"
+        New-ADGroup -Name "$securitygroup" -Groupcategory "Security" -Groupscope "Global" -Path "$PATH2"
     } 
     elseif ($SCMVAR -eq "n") {
         Write-Host "Det vil måske ikke virke at oprette bruger."
@@ -110,13 +129,26 @@ for ($i = 0; $i -lt $loop1; $i++) {
     $Navn = $DN | Get-Random
     $Efternavn = $DLN | Get-Random
 
-    $FN = $Navn.Substring(0, 1).ToUpper()
+    $FN = $Navn.Substring(0, 2).ToUpper()
     $EFN = $Efternavn.Substring(0, 4).ToUpper() 
+    
 
-    New-ADUser -SamAccountName "$FN$EFN" -UserPrincipalName "$FN$EFN@$Domain.$TLDvar" -Name "$Navn $Efternavn" -GivenName "$Navn" -Surname "$Efternavn" -DisplayName "$Navn $Efternavn" -Initials "$FN$EFN" -Path "OU=$OUVar,DC=$Domain,DC=$TLDvar" -AccountPassword $securePass -Enabled $true
-    Add-ADGroupMember -Identity "$securitygroup" -Members "$FN$EFN"
+    $SAMNavn = "$FN$EFN"
+    
+    New-ADUser -SamAccountName "$SAMNavn$numstand" `
+    -UserPrincipalName "$FN$EFN@$Domain.$TLDvar" `
+    -Name "$Navn $Efternavn" `
+    -GivenName "$Navn" `
+    -Surname "$Efternavn" `
+    -DisplayName "$Navn $Efternavn" `
+    -Initials "$FN$EFN" `
+    -Path "$PATH2" `
+    -AccountPassword $securePass `
+    -Enabled $true
 
-    Write-Host "Initialer er:" "$FN$EFN" 
+    Add-ADGroupMember -Identity "$securitygroup" -Members "$SAMNavn"
+
+    Write-Host "Initialer er:" "$SAMNavn" 
     Write-Host "Navn: $Navn"
     Write-Host "Efternavn: $Efternavn"
     Write-Host "Adgangskode: $pass"
