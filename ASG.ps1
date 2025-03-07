@@ -135,7 +135,7 @@ for ($i = 0; $i -lt $loop1; $i++) {
 
     $SAMNavn = "$FN$EFN"
     
-    New-ADUser -SamAccountName "$SAMNavn$numstand" `
+    New-ADUser -SamAccountName "$SAMNavn" `
     -UserPrincipalName "$FN$EFN@$Domain.$TLDvar" `
     -Name "$Navn $Efternavn" `
     -GivenName "$Navn" `
