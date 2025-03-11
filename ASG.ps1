@@ -62,7 +62,6 @@ $banner = "
 "
 
 $pass = "Merc1234!"
-$securePass = ConvertTo-SecureString $pass -AsPlainText -Force
 
 write-host "$banner"
 
@@ -135,7 +134,7 @@ for ($i = 0; $i -lt $loop1; $i++) {
 
     $SAMNavn = "$FN$EFN"
     
-    New-ADUser -SamAccountName "$SAMNavn" `
+    New-ADUser -SamAccountName "$SAMNavn$numstand" `
     -UserPrincipalName "$FN$EFN@$Domain.$TLDvar" `
     -Name "$Navn $Efternavn" `
     -GivenName "$Navn" `
@@ -143,7 +142,7 @@ for ($i = 0; $i -lt $loop1; $i++) {
     -DisplayName "$Navn $Efternavn" `
     -Initials "$FN$EFN" `
     -Path "$PATH2" `
-    -AccountPassword $securePass `
+    -AccountPassword $pass `
     -Enabled $true
 
     Add-ADGroupMember -Identity "$securitygroup" -Members "$SAMNavn"
